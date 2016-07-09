@@ -10,3 +10,5 @@ class StockDatabase:
     mom = []
     price = []
     evebitda = []
+    shy = []
+    bby = []

@@ -37,28 +37,44 @@ def _readFinvizLine(line, stocks):
     stocks.tick.append(stkraw[dl[1] + 1: dl[2]])
     # Get company name
     stocks.name.append(stkraw[dl[2] + 1 : dl[3]])
+
+    # Get market cap multiplier (either MM or BB)
+    if stkraw[dl[4] - 1] == 'B':
+        capmult = 1000000000
+    else:
+        capmult = 1000000
+
     # Get market cap
-    stocks.mktcap.append(stkraw[dl[3] + 1 : dl[4]])
+    stocks.mktcap.append(capmult * _toFloat(stkraw[dl[3] + 1 : dl[4] - 1]))
     # Get P/E ratio
-    stocks.pe.append(stkraw[dl[4] + 1 : dl[5]])
+    stocks.pe.append(_toFloat(stkraw[dl[4] + 1 : dl[5]]))
     # Get P/S ratio
-    stocks.ps.append(stkraw[dl[5] + 1 : dl[6]])
+    stocks.ps.append(_toFloat(stkraw[dl[5] + 1 : dl[6]]))
     # Get P/B ratio
-    stocks.pb.append(stkraw[dl[6] + 1 : dl[7]])
+    stocks.pb.append(_toFloat(stkraw[dl[6] + 1 : dl[7]]))
     # Get P/FCF ratio
-    stocks.pfcf.append(stkraw[dl[7] + 1 : dl[8]])
+    stocks.pfcf.append(_toFloat(stkraw[dl[7] + 1 : dl[8]]))
     # Get Dividend Yield
-    stocks.div.append(stkraw[dl[8] + 1 : dl[9]])
+    stocks.div.append(_toFloat(stkraw[dl[8] + 1 : dl[9] - 1]))
     # Get 6-mo Relative Price Strength
-    stocks.mom.append(stkraw[dl[9] + 1 : dl[10]])
+    stocks.mom.append(_toFloat(stkraw[dl[9] + 1 : dl[10] - 1]))
     # Get Current Stock Price
-    stocks.price.append(stkraw[dl[11] + 1 : dl[12]])
+    stocks.price.append(_toFloat(stkraw[dl[11] + 1 : dl[12]]))
 
     return
 
-def readYahooLine(line):
-    "Imports stock metrics from a Yahoo Finance data line and stores it in "
-    "the database"
+def _toFloat(line):
+    "Converts a string to a float"
+
+    try:
+        num = float(line)
+    except:
+        num = float('NaN')
+
+    return num
+
+def readYahooEVEBITDA(line):
+    "Imports EV/EBITDA data from Yahoo! Finance"
 
     # Parse html
     (stkraw, dl) = _parseHtml(line)
@@ -68,12 +84,41 @@ def readYahooLine(line):
             evebitda = stkraw[dl[i + 1] + 1 : dl[i + 2]]
             break
 
-    return evebitda
+    return float(evebitda)
+
+def readYahooBBY(line):
+    "Imports BBY data from Yahoo! Finance"
+
+    # Line also contains Borrowings details
+    if 'Net.Borrowings' in line:
+        # Remove extra data
+        line = re.sub('Net.Borrowings.*', '', line)
+
+    # Trim prior data
+    line = line[line.find('Sale.Purchase.of.Stock')]
+    # Determine if buys or sells, replace open parantheses:
+    # (#,###) -> -#,###
+    line = re.sub(line, '(', '-')
+    # Eliminate commas and close parantheses: -#,### -> -####
+    line = re.sub(line, ',|)', '')
+    # Remove HTML data and markup, replacing with commas
+    line = re.sub(line, '<.*?>|&nbsp;', ',')
+    # Locate the beginning of quarterly Sale Purchase points
+    starts = [m.start() for m in re.finditer(',\d+,|,.\d+', line)]
+    # Locate the end of quarterly Sale Purchase points
+    ends = [m.start() for m in re.finditer('\d,', line)]
+
+    # Sum all buys and sells
+    tot = 0
+    for i in range(0, len(starts)):
+        tot = tot + float(line[starts[i] + 1 : ends[i]]) * 1000
+
+    return tot
 
 def _parseHtml(line):
-    "Parses the HTML line"
+    "Parses the HTML line by </td> breaks and returns the delimited string"
 
-    # Replace </td> breaks with placeholder
+    # Replace </td> breaks with placeholder, '`'
     ph = '`'
     rem = re.sub('</td>', ph, line)
 
