@@ -63,18 +63,18 @@ Scraper.importFinvizPage(html, stocks)
 
 # The first page of stocks (20 stocks) has been imported. Now import the
 # rest of them
-for i in range(1, nPages + 1):
-    # Print dynamic progress message
-    print('Scraping FINVIZ metrics from page ' + str(i) + ' of ' + \
-        str(nPages) + '...', file=stdout, flush=True)
-
-    # Scrape data as before
-    url = 'http://finviz.com/screener.ashx?v=152&f=cap_smallover&ft=4&r=' + \
-        str(i*20+1) + '&c=0,1,2,6,7,10,11,13,14,45,65'
-    html = Scraper.importHtml(url)
-
-    # Import stock metrics from page
-    Scraper.importFinvizPage(html, stocks)
+# for i in range(1, nPages + 1):
+#     # Print dynamic progress message
+#     print('Importing FINVIZ metrics from page ' + str(i) + ' of ' + \
+#         str(nPages) + '...', file=stdout, flush=True)
+#
+#     # Scrape data as before
+#     url = 'http://finviz.com/screener.ashx?v=152&f=cap_smallover&ft=4&r=' + \
+#         str(i*20+1) + '&c=0,1,2,6,7,10,11,13,14,45,65'
+#     html = Scraper.importHtml(url)
+#
+#     # Import stock metrics from page
+#     Scraper.importFinvizPage(html, stocks)
 
 # FINVIZ stock metrics successfully imported
 print('\n')
@@ -84,7 +84,7 @@ nStocks = len(stocks)
 
 for i in range(nStocks):
     # Print dynamic progress message
-    print('Scraping EV/EBITDA for ' + stocks[i].tick +
+    print('Importing Key Statistics for ' + stocks[i].tick +
         ' (' + str(i) + '/' + str(nStocks - 1) + ') from Yahoo! Finance...', \
         file=stdout, flush=True)
 
@@ -95,16 +95,16 @@ for i in range(nStocks):
     # Parse data
     for line in html:
         # Check no value
-        if 'There.is.no.Key.Statistics' in line or \
-        'Get.Quotes.Results.for' in line or \
-        'Changed.Ticker.Symbol' in line or \
+        if 'There is no Key Statistics' in line or \
+        'Get Quotes Results for' in line or \
+        'Changed Ticker Symbol' in line or \
         '</html>' in line:
             # Non-financial file (e.g. mutual fund) or
             # Ticker not located or
             # End of html page
             stocks[i].evebitda = 1000
             break
-        elif 'Enterprise.Value/EBITDA' in line:
+        elif 'Enterprise Value/EBITDA' in line:
             # Line contains EV/EBITDA data
             evebitda = Scraper.readYahooEVEBITDA(line)
             stocks[i].evebitda = evebitda
@@ -117,7 +117,7 @@ print('\n')
 # Grab BBY metrics from Yahoo! Finance
 for i in range(nStocks):
     # Print dynamic progress message
-    print('Scraping BBY for ' + stocks[i].tick +
+    print('Importing Cash Flow for ' + stocks[i].tick +
         ' (' + str(i) + '/' + str(nStocks - 1) + ') from Yahoo! Finance...', \
         file=stdout, flush=True)
 
@@ -182,7 +182,7 @@ rankOverall = [len(rankStock) - 1 - x for x in rankOverall]
 # Assign to stocks
 for i in range(nStocks):
     stocks[i].rank = rankOverall[i]
-    stocks[i].vc = valueComposite[i]
+    stocks[i].vc = round(valueComposite[i], 2)
 
 print('Sorting stocks...')
 
