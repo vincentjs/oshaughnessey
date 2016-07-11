@@ -90,7 +90,7 @@ def readYahooEVEBITDA(line):
             evebitda = stkraw[dl[i + 1] + 1 : dl[i + 2]]
             break
 
-    return float(evebitda)
+    return _toFloat(evebitda)
 
 def readYahooBBY(line):
     "Imports BBY data from Yahoo! Finance"
