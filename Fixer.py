@@ -1,7 +1,8 @@
 import numpy as np
 
 def fixBrokenMetrics(stocks):
-    "Fix the list A by replacing items marked by mask with val"
+    "Fix negative earnings, dividends, etc. and artificially replace with a \
+    value (0 or 100,000) that removes the metric from consideration"
 
     # Fix errors caused by negative earnings, no dividends, etc.
     nanPE = np.isnan([o.pe for o in stocks])

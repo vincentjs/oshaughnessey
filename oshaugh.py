@@ -1,7 +1,16 @@
 # Original Work: James O'Shaughnessey, "What Works on Wall Street"
 # MATLAB Script: Justin Riley, 2012-2014
-# Python 3.x Script: Vincent San Miguel, July 2016
+# Python 3.x Translation: Vincent San Miguel, July 2016
 #
+# TODO:
+#   - Handle HTML error codes
+#
+# Note to Developers:
+# Works as of July 2016. Because this script relies on data scraped from
+# HTML web pages, it may break if the web pages change in format. The developer
+# must examine the HTML and update the Scraper class as needed.
+#
+# Background:
 # Replicates the concept of Trending Value. Each company is scored on six
 # performance metrics:
 #   (1) P/E ratio (Price to Earnings)
@@ -151,6 +160,8 @@ for i in range(nStocks):
 print('\n')
 print('Fixing screener errors...')
 
+# A number of stocks may have broken metrics. Fix these (i.e. assign out-of-
+# bounds values) before sorting
 stocks = Fixer.fixBrokenMetrics(stocks)
 
 print('Ranking stocks...')
@@ -189,13 +200,16 @@ print('Sorting stocks...')
 # Sort all stocks by normalized rank
 stocks = [x for (y, x) in sorted(zip(rankOverall, stocks))]
 
-# Sort top decile by momentum factor
+# Sort top decile by momentum factor. O'Shaughnessey historically uses 25
+# stocks to hold. The top decile is printed, and the user may select the top 25
+# (or any n) from the .csv file.
 dec = int(nStocks / 10)
 topDecile = []
 
-# Store temporary momentums from top decile
+# Store temporary momentums from top decile for sorting reasons
 moms = [o.mom for o in stocks[:dec]]
 
+# Sort top decile by momentum
 for i in range(dec):
     # Get index of top momentum performer in top decile
     topMomInd = moms.index(max(moms))
@@ -207,13 +221,14 @@ for i in range(dec):
 print('Saving stocks...')
 
 # Save momentum-weighted top decile
-csvpath = 'top.csv'
-Writer.writeCSV(csvpath, topDecile)
+topCsvPath = 'top.csv'
+Writer.writeCSV(topCsvpath, topDecile)
 
 # Save results to .csv
-csvpath = 'stocks.csv'
-Writer.writeCSV(csvpath, stocks)
+allCsvPath = 'stocks.csv'
+Writer.writeCSV(allCsvPath, stocks)
 
 print('\n')
 print('Complete.')
-print('Results saved to ' + csvpath)
+print('Top decile (sorted by momentum) saved to ' + topCsvpath)
+print('All stocks (sorted by trending value) saved to ' + allCsvPath)
