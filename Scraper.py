@@ -4,7 +4,8 @@ from urllib.request import urlopen
 from Stock import Stock
 
 def importHtml(url):
-    "Scrapes the HTML file from the given URL"
+    "Scrapes the HTML file from the given URL and returns line break delimited \
+    strings"
 
     response = urlopen(url, data = None)
     html = response.read().decode('utf-8').split('\n')
@@ -12,7 +13,8 @@ def importHtml(url):
     return html
 
 def importFinvizPage(html, stocks):
-    "Imports data from a FINVIZ HTML page"
+    "Imports data from a FINVIZ HTML page and stores in the list of Stock \
+    objects"
 
     isFound = False
 
@@ -28,7 +30,8 @@ def importFinvizPage(html, stocks):
     return
 
 def _readFinvizLine(line, stocks):
-    "Imports stock metrics from the data line and stores it in the database"
+    "Imports stock metrics from the data line and stores it in the list of \
+    Stock objects"
 
     # Parse html
     (stkraw, dl) = _parseHtml(line)
@@ -70,7 +73,7 @@ def _readFinvizLine(line, stocks):
     return
 
 def _toFloat(line):
-    "Converts a string to a float"
+    "Converts a string to a float. Returns NaN if the line can't be converted"
 
     try:
         num = float(line)
@@ -80,7 +83,7 @@ def _toFloat(line):
     return num
 
 def readYahooEVEBITDA(line):
-    "Imports EV/EBITDA data from Yahoo! Finance"
+    "Returns EV/EBITDA data from Yahoo! Finance HTML line"
 
     # Parse html
     (stkraw, dl) = _parseHtml(line)
@@ -93,7 +96,8 @@ def readYahooEVEBITDA(line):
     return _toFloat(evebitda)
 
 def readYahooBBY(line):
-    "Imports BBY data from Yahoo! Finance"
+    "Returns total buys and sells from Yahoo! Finance HTML line. Result will \
+    still need to be divided by market cap"
 
     # Line also contains Borrowings details - Remove it all
     if 'Net Borrowings' in line:
