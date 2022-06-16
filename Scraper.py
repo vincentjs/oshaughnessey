@@ -1,5 +1,5 @@
 import re
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 from Stock import Stock
 
@@ -7,7 +7,7 @@ def importHtml(url):
     "Scrapes the HTML file from the given URL and returns line break delimited \
     strings"
 
-    response = urlopen(url, data = None)
+    response = urlopen(Request(url, data = None, headers = {'User-Agent': 'Mozilla'}))
     html = response.read().decode('utf-8').split('\n')
 
     return html
